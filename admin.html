@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>لوحة تحكم الأدمن - تك تشانس</title>
+<style>
+  body {
+    font-family: 'Tajawal', sans-serif;
+    max-width: 900px;
+    margin: 20px auto;
+    padding: 20px;
+    background: #f0f4f8;
+    color: #222;
+  }
+  h1, h2 {
+    text-align: center;
+    color: #2c3e50;
+  }
+  label {
+    display: block;
+    margin-top: 15px;
+    font-weight: bold;
+  }
+  input[type=text], textarea, select {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+  }
+  button {
+    margin-top: 15px;
+    padding: 12px 20px;
+    background: #27ae60;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: background 0.3s ease;
+  }
+  button:hover {
+    background: #219150;
+  }
+  .section {
+    background: white;
+    padding: 20px;
+    margin-top: 30px;
+    border-radius: 15px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.1);
+  }
+  ul {
+    margin-top: 10px;
+    padding-left: 20px;
+  }
+  ul li {
+    margin-bottom: 8px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 5px;
+  }
+  .delete-btn {
+    background: #e74c3c;
+    margin-left: 10px;
+    padding: 4px 8px;
+    font-size: 0.9rem;
+    border-radius: 8px;
+  }
+</style>
+</head>
+<body>
+
+<h1>لوحة تحكم الأدمن - تك تشانس</h1>
+
+<!-- اختيار المرحلة المفتوحة -->
+<div class="section">
+  <h2>التحكم بالمرحلة المفتوحة الآن</h2>
+  <label for="activeStage">اختر المرحلة المفتوحة للمشاركين:</label>
+  <select id="activeStage">
+    <option value="1">المرحلة 1 - الأسئلة</option>
+    <option value="2">المرحلة 2 - الألغاز</option>
+    <option value="3">المرحلة 3 - المواجهة</option>
+  </select>
+  <button onclick="saveActiveStage()">حفظ المرحلة المفتوحة</button>
+  <p id="stageMsg" style="color:green; margin-top:10px;"></p>
+</div>
+
+<!-- إضافة سؤال -->
+<div class="section">
+  <h2>إضافة سؤال (المرحلة 1)</h2>
+  <label>السؤال:</label>
+  <textarea id="questionText" rows="3" placeholder="اكتب السؤال هنا"></textarea>
+
+  <label>الخيار 1:</label>
+  <input type="text" id="option1" placeholder="الخيار الأول" />
+  <label>الخيار 2:</label>
+  <input type="text" id="option2" placeholder="الخيار الثاني" />
+  <label>الخيار 3:</label>
+  <input type="text" id="option3" placeholder="الخيار الثالث" />
+
+  <label>رقم الخيار الصحيح (1-3):</label>
+  <input type="number" id="correctOption" min="1" max="3" />
+
+  <button onclick="addQuestion()">إضافة السؤال</button>
+
+  <ul id="questionsList"></ul>
+</div>
+
+<!-- إضافة لغز -->
+<div class="section">
+  <h2>إضافة لغز (المرحلة 2)</h2>
+  <label>اللغز:</label>
+  <textarea id="puzzleText" rows="3" placeholder="اكتب اللغز هنا"></textarea>
+
+  <label>الخيار 1:</label>
+  <input type="text" id="puzzleOption1" placeholder="الخيار الأول" />
+  <label>الخيار 2:</label>
+  <input type="text" id="puzzleOption2" placeholder="الخيار الثاني" />
+  <label>الخيار 3:</label>
+  <input type="text" id="puzzleOption3" placeholder="الخيار الثالث" />
+
+  <label>رقم الخيار الصحيح (1-3):</label>
+  <input type="number" id="puzzleCorrectOption" min="1" max="3" />
+
+  <button onclick="addPuzzle()">إضافة اللغز</button>
+
+  <ul id="puzzlesList"></ul>
+</div>
+
+<script>
+// تحميل البيانات من localStorage أو تهيئتها إذا كانت غير موجودة
+let questions = JSON.parse(localStorage.getItem('questions')) || [];
+let puzzles = JSON.parse(localStorage.getItem('puzzles')) || [];
+let activeStage = localStorage.getItem('activeStage') || '1';
+
+document.getElementById('activeStage').value = activeStage;
+
+// عرض قائمة الأسئلة
+function renderQuestions(){
+  const list = document.getElementById('questionsList');
+  list.innerHTML = '';
+  questions.forEach((q, i) => {
+    const li = document.createElement('li');
+    li.textContent = `${i+1}. ${q.text} - الإجابة الصحيحة: خيار ${q.correctOption}`;
+    const delBtn = document.createElement('button');
+    delBtn.textContent = 'حذف';
+    delBtn.className = 'delete-btn';
+    delBtn.onclick = () => {
+      questions.splice(i,1);
+      saveQuestions();
+      renderQuestions();
+    };
+    li.appendChild(delBtn);
+    list.appendChild(li);
+  });
+}
+
+// عرض قائمة الألغاز
+function renderPuzzles(){
+  const list = document.getElementById('puzzlesList');
+  list.innerHTML = '';
+  puzzles.forEach((p, i) => {
+    const li = document.createElement('li');
+    li.textContent = `${i+1}. ${p.text} - الإجابة الصحيحة: خيار ${p.correctOption}`;
+    const delBtn = document.createElement('button');
+    delBtn.textContent = 'حذف';
+    delBtn.className = 'delete-btn';
+    delBtn.onclick = () => {
+      puzzles.splice(i,1);
+      savePuzzles();
+      renderPuzzles();
+    };
+    li.appendChild(delBtn);
+    list.appendChild(li);
+  });
+}
+
+// حفظ الأسئلة في localStorage
+function saveQuestions(){
+  localStorage.setItem('questions', JSON.stringify(questions));
+}
+
+// حفظ الألغاز في localStorage
+function savePuzzles(){
+  localStorage.setItem('puzzles', JSON.stringify(puzzles));
+}
+
+// حفظ المرحلة المفتوحة
+function saveActiveStage(){
+  activeStage = document.getElementById('activeStage').value;
+  localStorage.setItem('activeStage', activeStage);
+  document.getElementById('stageMsg').textContent = 'تم تحديث المرحلة المفتوحة إلى المرحلة ' + activeStage;
+  setTimeout(() => {
+    document.getElementById('stageMsg').textContent = '';
+  }, 3000);
+}
+
+// إضافة سؤال جديد
+function addQuestion(){
+  const text = document.getElementById('questionText').value.trim();
+  const option1 = document.getElementById('option1').value.trim();
+  const option2 = document.getElementById('option2').value.trim();
+  const option3 = document.getElementById('option3').value.trim();
+  const correctOption = parseInt(document.getElementById('correctOption').value);
+
+  if(!text || !option1 || !option2 || !option3 || ![1,2,3].includes(correctOption)){
+    alert('يرجى ملء جميع الحقول بشكل صحيح.');
+    return;
+  }
+
+  questions.push({
+    text,
+    options: [option1, option2, option3],
+    correctOption
+  });
+
+  saveQuestions();
+  renderQuestions();
+
+  // تفريغ الحقول
+  document.getElementById('questionText').value = '';
+  document.getElementById('option1').value = '';
+  document.getElementById('option2').value = '';
+  document.getElementById('option3').value = '';
+  document.getElementById('correctOption').value = '';
+}
+
+// إضافة لغز جديد
+function addPuzzle(){
+  const text = document.getElementById('puzzleText').value.trim();
+  const option1 = document.getElementById('puzzleOption1').value.trim();
+  const option2 = document.getElementById('puzzleOption2').value.trim();
+  const option3 = document.getElementById('puzzleOption3').value.trim();
+  const correctOption = parseInt(document.getElementById('puzzleCorrectOption').value);
+
+  if(!text || !option1 || !option2 || !option3 || ![1,2,3].includes(correctOption)){
+    alert('يرجى ملء جميع الحقول بشكل صحيح.');
+    return;
+  }
+
+  puzzles.push({
+    text,
+    options: [option1, option2, option3],
+    correctOption
+  });
+
+  savePuzzles();
+  renderPuzzles();
+
+  // تفريغ الحقول
+  document.getElementById('puzzleText').value = '';
+  document.getElementById('puzzleOption1').value = '';
+  document.getElementById('puzzleOption2').value = '';
+  document.getElementById('puzzleOption3').value = '';
+  document.getElementById('puzzleCorrectOption').value = '';
+}
+
+// عند تحميل الصفحة
+window.onload = () => {
+  renderQuestions();
+  renderPuzzles();
+}
+</script>
+
+</body>
+</html>

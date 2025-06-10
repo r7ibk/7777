@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>بروفايل المتسابق - Tech Chance</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    font-family: 'Tajawal', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #1e1e1e, #121212);
+    color: #fff;
+  }
+
+  .profile-card {
+    background-color: #222;
+    padding: 25px 20px;
+    border-radius: 20px;
+    box-shadow: 0 0 25px rgba(243, 156, 18, 0.6);
+    width: 280px;
+    min-height: 400px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+  }
+
+  .profile-card h1 {
+    color: #f39c12;
+    margin-bottom: 20px;
+    font-weight: 700;
+    font-size: 1.8rem;
+  }
+
+  .profile-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 4px solid #f39c12;
+    object-fit: cover;
+    margin-bottom: 15px;
+    cursor: pointer;
+    transition: box-shadow 0.3s ease;
+  }
+
+  .profile-avatar:hover {
+    box-shadow: 0 0 20px #f39c12;
+  }
+
+  .profile-info p {
+    margin: 8px 0;
+    font-size: 1rem;
+  }
+
+  .btn {
+    background-color: #f39c12;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 20px;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-top: 15px;
+    transition: background-color 0.3s ease;
+  }
+
+  .btn:hover {
+    background-color: #e67e22;
+  }
+
+  .warning {
+    background-color: #e74c3c;
+    color: #fff;
+    padding: 10px;
+    border-radius: 10px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    display: none;
+    animation: fadeOut 5s forwards;
+    position: absolute;
+    top: -50px;
+  }
+
+  @keyframes fadeOut {
+    0% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { opacity: 0; display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="profile-card">
+  <div class="warning" id="warningBox">⚠️ يمكنك تعديل البروفايل مرتين فقط في الشهر!</div>
+
+  <h1>بروفايلك</h1>
+
+  <img id="avatarImage" src="https://via.placeholder.com/150" alt="Avatar" class="profile-avatar" title="اضغط لتغيير الصورة" />
+  <input type="file" id="avatarInput" accept="image/*" style="display:none;" />
+
+  <div class="profile-info">
+    <p>👤 الاسم: <span id="displayName">---</span></p>
+    <p>🎂 العمر: <span id="displayAge">---</span></p>
+    <p>🔰 اليوزر: <span id="displayHandle">---</span></p>
+    <p>🚻 الجنس: <span id="displayGender">---</span></p>
+    <p>🏆 النقاط: <span id="displayPoints">0</span></p>
+  </div>
+
+  <button class="btn" id="editBtn">تعديل البروفايل</button>
+</div>
+
+<script>
+  // تحميل البيانات من localStorage
+  const userData = JSON.parse(localStorage.getItem('userData')) || {
+    name: '---',
+    age: '---',
+    instagram: '---',
+    gender: '---',
+    points: '0',
+    avatar: 'https://via.placeholder.com/150',
+  };
+
+  document.getElementById('displayName').innerText = userData.name;
+  document.getElementById('displayAge').innerText = userData.age;
+  document.getElementById('displayHandle').innerText = userData.instagram;
+  document.getElementById('displayGender').innerText = userData.gender;
+  document.getElementById('displayPoints').innerText = userData.points;
+  document.getElementById('avatarImage').src = userData.avatar;
+
+  // الحد الأقصى للتعديل مرتين في الشهر
+  const maxEditsPerMonth = 2;
+  const currentMonth = new Date().getMonth() + 1;
+  let editData = JSON.parse(localStorage.getItem('editData')) || { count: 0, month: currentMonth };
+
+  if (editData.month !== currentMonth) {
+    editData = { count: 0, month: currentMonth };
+    localStorage.setItem('editData', JSON.stringify(editData));
+  }
+
+  // تعديل الصورة
+  document.getElementById('avatarImage').addEventListener('click', () => {
+    document.getElementById('avatarInput').click();
+  });
+
+  document.getElementById('avatarInput').addEventListener('change', function(){
+    const file = this.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(e){
+        document.getElementById('avatarImage').src = e.target.result;
+        userData.avatar = e.target.result;
+        localStorage.setItem('userData', JSON.stringify(userData));
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  // زر التعديل
+  document.getElementById('editBtn').addEventListener('click', () => {
+    if (editData.count >= maxEditsPerMonth) {
+      // عرض التحذير فقط لمدة 5 ثواني
+      const warningBox = document.getElementById('warningBox');
+      warningBox.style.display = 'block';
+      warningBox.style.opacity = '1';
+      setTimeout(() => {
+        warningBox.style.display = 'none';
+      }, 5000);
+      return;
+    }
+
+    // مثال: هنا تقدر تفتح فورم تعديل الاسم والعمر ...الخ
+    const newName = prompt('اسم جديد:', userData.name);
+    const newAge = prompt('عمر جديد:', userData.age);
+    const newInstagram = prompt('يوزر انستغرام جديد:', userData.instagram);
+    const newGender = prompt('الجنس:', userData.gender);
+
+    if (newName && newAge && newInstagram && newGender) {
+      userData.name = newName;
+      userData.age = newAge;
+      userData.instagram = newInstagram;
+      userData.gender = newGender;
+
+      localStorage.setItem('userData', JSON.stringify(userData));
+
+      // تحديث الشاشة
+      document.getElementById('displayName').innerText = userData.name;
+      document.getElementById('displayAge').innerText = userData.age;
+      document.getElementById('displayHandle').innerText = userData.instagram;
+      document.getElementById('displayGender').innerText = userData.gender;
+
+      // زيادة العداد
+      editData.count++;
+      localStorage.setItem('editData', JSON.stringify(editData));
+    }
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>لوحة تحكم الأدمن - Tech Chance</title>
+  <style>
+    body {
+      background-color: #0f0f0f;
+      color: #fff;
+      font-family: 'Tajawal', sans-serif;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 25px;
+      color: #feca57;
+      font-size: 2.2rem;
+    }
+    #adminPanel {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: #1c1c1c;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    table, th, td {
+      border: 1px solid #444;
+    }
+    th, td {
+      padding: 12px;
+      text-align: center;
+    }
+    th {
+      background-color: #222;
+      font-size: 1rem;
+      color: #feca57;
+    }
+    td {
+      font-size: 0.95rem;
+    }
+    input[type="text"], input[type="number"], button {
+      padding: 8px 12px;
+      margin: 5px;
+      border-radius: 5px;
+      border: none;
+      font-family: inherit;
+    }
+    input[type="text"], input[type="number"] {
+      background-color: #333;
+      color: #fff;
+      width: 100px;
+    }
+    button {
+      cursor: pointer;
+      font-weight: bold;
+      background-color: #feca57;
+      color: #111;
+      transition: 0.2s ease;
+    }
+    button:hover {
+      background-color: #ffb700;
+    }
+    .blocked {
+      background-color: #c0392b !important;
+      color: #fff !important;
+    }
+    #searchInput {
+      width: 50%;
+      padding: 10px;
+      display: block;
+      margin: 0 auto 20px auto;
+      text-align: center;
+      background-color: #222;
+      border: 1px solid #555;
+      color: #fff;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+    .top-buttons {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .top-buttons button {
+      margin: 0 5px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="adminPanel">
+  <h1>لوحة تحكم الأدمن - Tech Chance</h1>
+
+  <input type="text" id="searchInput" placeholder="🔍 ابحث عن لاعب بالاسم أو اليوزر" onkeyup="searchPlayer()">
+
+  <div class="top-buttons">
+    <button onclick="exportTableToExcel()">📥 تصدير إلى Excel</button>
+    <button onclick="addPlayerManually()">➕ إضافة لاعب يدويًا</button>
+  </div>
+
+  <table id="playersTable">
+    <thead>
+      <tr>
+        <th>الاسم</th>
+        <th>العمر</th>
+        <th>اليوزر</th>
+        <th>الجنس</th>
+        <th>النقاط</th>
+        <th>تاريخ آخر تعديل</th>
+        <th>حالة اللاعب</th>
+        <th>إجراءات</th>
+      </tr>
+    </thead>
+    <tbody id="playersBody">
+      <!-- اللاعبين هنا -->
+    </tbody>
+  </table>
+</div>
+
+<script>
+  // داتا تجريبية (لاحقاً تسحب من LocalStorage أو سيرفر)
+  let players = JSON.parse(localStorage.getItem('playersList')) || [];
+
+  function savePlayers() {
+    localStorage.setItem('playersList', JSON.stringify(players));
+  }
+
+  function renderPlayers() {
+    const tbody = document.getElementById('playersBody');
+    tbody.innerHTML = '';
+
+    players.forEach((player, index) => {
+      const row = document.createElement('tr');
+      if (player.blockedUntil && new Date(player.blockedUntil) > new Date()) {
+        row.classList.add('blocked');
+      }
+
+      row.innerHTML = `
+        <td>${player.name}</td>
+        <td>${player.age}</td>
+        <td>${player.instagram}</td>
+        <td>${player.gender}</td>
+        <td><input type="number" value="${player.points}" onchange="updatePoints(${index}, this.value)"></td>
+        <td>${player.lastUpdated || '---'}</td>
+        <td>${player.blockedUntil ? '🚫 موقوف حتى ' + player.blockedUntil : '✅ نشط'}</td>
+        <td>
+          <button onclick="blockPlayer(${index})">🚫 إيقاف</button>
+          <button onclick="deletePlayer(${index})">🗑️ حذف</button>
+        </td>
+      `;
+      tbody.appendChild(row);
+    });
+  }
+
+  function updatePoints(index, newPoints) {
+    players[index].points = parseInt(newPoints);
+    players[index].lastUpdated = new Date().toLocaleDateString();
+    savePlayers();
+    renderPlayers();
+  }
+
+  function deletePlayer(index) {
+    if (confirm('❗ هل أنت متأكد من حذف اللاعب؟')) {
+      players.splice(index, 1);
+      savePlayers();
+      renderPlayers();
+    }
+  }
+
+  function blockPlayer(index) {
+    const days = prompt('كم يوم تريد إيقاف اللاعب؟');
+    if (days) {
+      const blockUntilDate = new Date();
+      blockUntilDate.setDate(blockUntilDate.getDate() + parseInt(days));
+      players[index].blockedUntil = blockUntilDate.toISOString().split('T')[0];
+      savePlayers();
+      renderPlayers();
+    }
+  }
+
+  function addPlayerManually() {
+    const name = prompt('اسم اللاعب:');
+    const age = prompt('عمر اللاعب:');
+    const instagram = prompt('يوزر الانستغرام:');
+    const gender = prompt('الجنس (ذكر / أنثى / آخر):');
+
+    if (name && age && instagram && gender) {
+      players.push({
+        name,
+        age,
+        instagram,
+        gender,
+        points: 0,
+        lastUpdated: new Date().toLocaleDateString(),
+        blockedUntil: null
+      });
+      savePlayers();
+      renderPlayers();
+    }
+  }
+
+  function searchPlayer() {
+    const input = document.getElementById('searchInput').value.toLowerCase();
+    const rows = document.querySelectorAll('#playersTable tbody tr');
+
+    rows.forEach(row => {
+      const name = row.cells[0].innerText.toLowerCase();
+      const instagram = row.cells[2].innerText.toLowerCase();
+      if (name.includes(input) || instagram.includes(input)) {
+        row.style.display = '';
+      } else {
+        row.style.display = 'none';
+      }
+    });
+  }
+
+  function exportTableToExcel() {
+    let table = document.getElementById('playersTable').outerHTML;
+    let filename = 'players_data.xls';
+    let dataType = 'application/vnd.ms-excel';
+    let downloadLink = document.createElement("a");
+
+    document.body.appendChild(downloadLink);
+
+    downloadLink.href = 'data:' + dataType + ', ' + encodeURIComponent(table);
+    downloadLink.download = filename;
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+  }
+
+  // أول تشغيل
+  renderPlayers();
+</script>
+
+</body>
+</html>

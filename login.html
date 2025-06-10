@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>تسجيل دخول - تك تشانس</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  body, html {
+    margin: 0; padding: 0; height: 100%;
+    font-family: 'Tajawal', sans-serif;
+    overflow: hidden;
+    background: linear-gradient(-45deg, #ff6b6b, #feca57, #48dbfb, #1dd1a1);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  @keyframes gradientBG {
+    0% {background-position: 0% 50%;}
+    50% {background-position: 100% 50%;}
+    100% {background-position: 0% 50%;}
+  }
+
+  .login-card {
+    background: rgba(0,0,0,0.75);
+    padding: 40px 35px 50px 35px;
+    border-radius: 20px;
+    width: 360px;
+    box-shadow: 0 0 20px rgba(255,255,255,0.2);
+    color: white;
+    text-align: center;
+    animation: fadeInDown 1s ease forwards;
+    position: relative;
+  }
+
+  h1.intro-text {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 20px;
+    white-space: nowrap;
+    overflow: hidden;
+    border-right: 4px solid #feca57;
+    animation: typewriter 4s steps(30) 0.3s forwards;
+  }
+
+  h2 {
+    font-weight: 700;
+    font-size: 2.2rem;
+    margin-bottom: 15px;
+    position: relative;
+    display: inline-block;
+  }
+  h2::after {
+    content: "";
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 3px;
+    background: #feca57;
+    border-radius: 5px;
+  }
+
+  @keyframes fadeInDown {
+    0% {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes typewriter {
+    0% { width: 0; }
+    100% { width: 100%; }
+  }
+
+  input, select {
+    width: 100%;
+    padding: 13px 15px;
+    margin: 12px 0 20px 0;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    outline: none;
+    transition: box-shadow 0.3s ease;
+    background-color: #222;
+    color: white;
+  }
+  input:focus, select:focus {
+    box-shadow: 0 0 8px #feca57;
+  }
+
+  button {
+    background-color: #feca57;
+    color: #222;
+    font-weight: 700;
+    font-size: 1.1rem;
+    padding: 12px 0;
+    border: none;
+    border-radius: 15px;
+    width: 100%;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+  button:hover {
+    background-color: #ffb700;
+    transform: scale(1.05);
+  }
+  button:active {
+    transform: scale(0.95);
+  }
+</style>
+</head>
+<body>
+  <!-- الصوت عند الدخول -->
+  <audio id="welcomeSound" src="https://actions.google.com/sounds/v1/ambiences/ambience_indoor_typing.ogg" preload="auto"></audio>
+  
+  <!-- صفحة تسجيل الدخول -->
+  <div class="login-card">
+    <h1 class="intro-text">مرحبا بك في تك تشانس</h1>
+    <h2>تسجيل دخول</h2>
+    <form id="loginForm" autocomplete="off">
+      <input type="text" id="name" name="name" placeholder="اسم المتسابق" required />
+      <input type="number" id="age" name="age" placeholder="العمر" min="5" max="120" required />
+      <input type="text" id="instagram" name="instagram" placeholder="يوزر الانستغرام" />
+      <select id="gender" name="gender" required>
+        <option value="" disabled selected>اختر نوع الجنس</option>
+        <option value="ذكر">ذكر</option>
+        <option value="أنثى">أنثى</option>
+        <option value="آخر">آخر</option>
+      </select>
+      <button type="submit">تسجيل دخول</button>
+    </form>
+  </div>
+
+  <script>
+    // صوت ترحيب عند الدخول
+    window.onload = function() {
+      document.getElementById('welcomeSound').play(); // تشغيل الصوت عند تحميل الصفحة
+    };
+
+    // صوت عند الضغط على زر التسجيل
+    const clickSound = new Audio('https://actions.google.com/sounds/v1/buttons/button_press.mp3');
+
+    document.getElementById('loginForm').addEventListener('submit', function(e){
+      e.preventDefault();
+      clickSound.play(); // تشغيل الصوت عند الضغط على الزر
+
+      // حفظ البيانات مؤقتاً في localStorage
+      const userData = {
+        name: this.name.value.trim(),
+        age: this.age.value,
+        instagram: this.instagram.value.trim(),
+        gender: this.gender.value,
+      };
+      localStorage.setItem('userData', JSON.stringify(userData));
+
+      alert('تم تسجيل الدخول بنجاح!');
+
+      // تحويل لصفحة البروفايل أو الرئيسية
+      // window.location.href = 'profile.html';
+    });
+  </script>
+</body>
+</html>

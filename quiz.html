@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>مسابقة GOT5</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  body {
+    font-family: 'Tajawal', sans-serif;
+    background: linear-gradient(135deg, #1e1e1e, #121212);
+    color: #fff;
+    text-align: center;
+    padding: 20px;
+  }
+
+  .stage-title {
+    font-size: 2rem;
+    color: #feca57;
+    margin-bottom: 20px;
+  }
+
+  .question-container {
+    display: none;
+    margin-top: 20px;
+  }
+
+  .question-text {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+  }
+
+  .option {
+    background-color: #333;
+    color: #fff;
+    border: 2px solid #feca57;
+    border-radius: 12px;
+    padding: 12px 20px;
+    margin: 10px auto;
+    width: 80%;
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+
+  .option:hover {
+    background-color: #feca57;
+    color: #222;
+    transform: scale(1.05);
+  }
+
+  .message {
+    font-size: 1.3rem;
+    margin-top: 15px;
+    color: #48dbfb;
+  }
+</style>
+</head>
+<body>
+
+<h1 class="stage-title" id="stageTitle">بانتظار بدء المرحلة...</h1>
+
+<div class="question-container" id="questionContainer">
+  <div class="question-text" id="questionText"></div>
+  <div class="option" onclick="checkAnswer(this)"></div>
+  <div class="option" onclick="checkAnswer(this)"></div>
+  <div class="option" onclick="checkAnswer(this)"></div>
+</div>
+
+<div class="message" id="message"></div>
+
+<script>
+// أسئلة تجريبية للمرحلة 1 و 2
+const questionsStage1 = [
+  { q: "ما هو عاصمة اليمن؟", options: ["صنعاء", "عدن", "تعز"], answer: "صنعاء" },
+  { q: "ما هو لون السماء؟", options: ["أخضر", "أزرق", "أحمر"], answer: "أزرق" },
+];
+
+const puzzlesStage2 = [
+  { q: "شيء له أوراق لكنه ليس شجرة؟", options: ["كتاب", "سيارة", "هاتف"], answer: "كتاب" },
+  { q: "يمشي بلا أرجل؟", options: ["ماء", "قطة", "شمس"], answer: "ماء" },
+];
+
+let currentStage = '';
+let currentQuestionIndex = 0;
+let currentQuestionSet = [];
+
+const correctSound = new Audio('https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg');
+const wrongSound = new Audio('https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg');
+
+function checkStageChange() {
+    const stage = localStorage.getItem('currentStage');
+    if (stage && stage !== currentStage) {
+        currentStage = stage;
+        handleStageChange(stage);
+    }
+}
+
+function handleStageChange(stage) {
+    document.getElementById('stageTitle').innerText = '';
+
+    if (stage === 'questions') {
+        currentQuestionSet = questionsStage1;
+        currentQuestionIndex = 0;
+        document.getElementById('stageTitle').innerText = 'المرحلة الأولى: الأسئلة';
+        showQuestion();
+    } else if (stage === 'puzzles') {
+        currentQuestionSet = puzzlesStage2;
+        currentQuestionIndex = 0;
+        document.getElementById('stageTitle').innerText = 'المرحلة الثانية: الألغاز';
+        showQuestion();
+    } else if (stage === 'challenge') {
+        document.getElementById('stageTitle').innerText = 'المرحلة الثالثة: المواجهة';
+        document.getElementById('questionContainer').style.display = 'none';
+        document.getElementById('message').innerText = 'انتظر التعليمات القادمة للمواجهة!';
+    } else if (stage === 'finished') {
+        document.getElementById('stageTitle').innerText = '🎉 انتهت المسابقة! شكراً لمشاركتك 🎉';
+        document.getElementById('questionContainer').style.display = 'none';
+        document.getElementById('message').innerText = '';
+    } else {
+        document.getElementById('stageTitle').innerText = 'بانتظار بدء المرحلة...';
+        document.getElementById('questionContainer').style.display = 'none';
+    }
+}
+
+function showQuestion() {
+    if (currentQuestionIndex >= currentQuestionSet.length) {
+        document.getElementById('message').innerText = '👏 انتهيت من هذه المرحلة!';
+        document.getElementById('questionContainer').style.display = 'none';
+        return;
+    }
+
+    const question = currentQuestionSet[currentQuestionIndex];
+    document.getElementById('questionContainer').style.display = 'block';
+    document.getElementById('message').innerText = '';
+    document.getElementById('questionText').innerText = question.q;
+
+    const options = document.querySelectorAll('.option');
+    question.options.forEach((opt, idx) => {
+        options[idx].innerText = opt;
+    });
+}
+
+function checkAnswer(element) {
+    const question = currentQuestionSet[currentQuestionIndex];
+    if (element.innerText === question.answer) {
+        correctSound.play();
+        document.getElementById('message').innerText = '✅ إجابة صحيحة!';
+    } else {
+        wrongSound.play();
+        document.getElementById('message').innerText = '❌ إجابة خاطئة!';
+    }
+
+    setTimeout(() => {
+        currentQuestionIndex++;
+        showQuestion();
+    }, 2000);
+}
+
+// راقب المرحلة كل 3 ثواني
+setInterval(checkStageChange, 3000);
+
+// أول مرة
+checkStageChange();
+</script>
+
+</body>
+</html>
